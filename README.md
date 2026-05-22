@@ -321,7 +321,6 @@ The student model effectively learns soft representations from the teacher netwo
 Per-class accuracy analysis shows the recognition capability of the model across different sign categories.
 
 ---
-
 # 📁 Project Structure
 
 ```text
@@ -345,29 +344,41 @@ Sign-Language-Recognition/
 │   └── test_bone_motion.yaml
 │
 ├── models/
+│   ├── ensemble_model.py
 │   ├── sl_gcn.py
 │   ├── st_gcn.py
-│   ├── student_cnn.py
-│   ├── ensemble_model.py
-│   └── distillation.py
 │
 ├── demo/
-│   ├── webcam_demo.py
-│   ├── realtime_predict.py
+│   ├── Model/
+│   ├── templates/
+│   ├── Distillation.py
 │   ├── app.py
+│   ├── app_stable.py
+│   ├── datacollection.py
+│   ├── launch_app.bat
 │   ├── prediction_stabilizer.py
-│   └── templates/
+│   ├── test.py
+│   ├── test_stable.py
+│   ├── test_tuned.py
+│   └── train.py
 │
 ├── demo results/
 │   ├── accuracy.png
 │   ├── confusion.png
+│   ├── distill_predictions.json
+│   ├── distill_predictions_50.json
 │   ├── loss.png
-│   └── per_class.png
+│   ├── per_class.png
+│   ├── predictions.json
+│   ├── top1_top5.png
+│   └── top25_analysis.json
 │
-├── requirements.txt
 ├── README.md
+├── Report.pdf
+├── final_Presentation.pdf
 └── LICENSE
 ```
+
 
 ---
 
@@ -399,7 +410,7 @@ data/sign/
 ## Clone Repository
 
 ```bash
-git clone https://github.com/your-username/Skeleton-Aware-Sign-Language-Recognition.git
+git clone https://github.com/navadheer23361/Skeleton-Aware-Sign-Language-Recognition.git
 
 cd Skeleton-Aware-Sign-Language-Recognition
 ```
