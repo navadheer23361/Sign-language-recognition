@@ -1,0 +1,12 @@
+weights: ./checkpoints/slgcn_bone.pth
+
+test_feeder_args:
+  data_path: ./data/sign/27_2/test_data_bone.npy
+  label_path: ./data/sign/27_2/test_label.pkl
+
+model: models.sl_gcn.Model
+
+model_args:
+  num_class: 2000
+  num_point: 27
+  num_person: 1

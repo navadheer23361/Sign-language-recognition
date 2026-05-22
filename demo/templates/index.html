@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skeleton Aware Sign Language Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top, rgba(14, 165, 233, 0.18), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.18), transparent 30%),
+                linear-gradient(135deg, #0f172a 0%, #111827 45%, #1e293b 100%);
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.45);
+        }
+
+        .video-frame {
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+        }
+
+        .video-shell {
+            position: relative;
+            min-height: 320px;
+        }
+
+        .video-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            color: rgb(148 163 184);
+            background: rgba(2, 6, 23, 0.85);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100">
+    <div class="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+        <header class="mb-8">
+            <div class="glass rounded-3xl px-6 py-5">
+                <p class="text-sm uppercase tracking-[0.3em] text-cyan-300">Skeleton Aware Vision</p>
+                <h1 class="mt-2 text-3xl font-bold sm:text-4xl">Skeleton Aware Sign Language Detection</h1>
+            </div>
+        </header>
+
+        <main class="grid flex-1 gap-6 lg:grid-cols-[1.5fr,0.9fr]">
+            <section class="glass overflow-hidden rounded-3xl p-4 sm:p-5">
+                <div class="mb-4 flex flex-wrap gap-3">
+                    <button
+                        id="startButton"
+                        type="button"
+                        class="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
+                    >
+                        Start Detection
+                    </button>
+                    <button
+                        id="stopButton"
+                        type="button"
+                        class="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10"
+                    >
+                        Stop Detection
+                    </button>
+                </div>
+                <div class="video-shell overflow-hidden rounded-2xl border border-white/10 bg-slate-950/50">
+                    <img
+                        id="videoStream"
+                        src=""
+                        alt="Live skeleton aware sign language detection video stream"
+                        class="video-frame hidden h-full w-full"
+                    >
+                    <div id="videoPlaceholder" class="video-placeholder">
+                        Click <strong class="mx-1 text-emerald-300">Start Detection</strong> to open the camera and begin sign prediction.
+                    </div>
+                </div>
+            </section>
+
+            <aside class="glass rounded-3xl p-6 sm:p-8">
+                <p class="text-sm uppercase tracking-[0.3em] text-emerald-300">Current Prediction</p>
+                <div class="mt-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-6">
+                    <h2 id="predictionText" class="text-4xl font-black tracking-tight text-white sm:text-5xl">
+                        Waiting for hand...
+                    </h2>
+                    <p id="confidenceText" class="mt-4 text-base text-emerald-100/90">
+                        Confidence: 0.00%
+                    </p>
+                </div>
+
+                <div class="mt-6">
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                        <p class="text-sm text-slate-400">Stream Status</p>
+                        <p id="cameraStatus" class="mt-2 text-lg font-semibold text-cyan-300">Starting...</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-300">
+                    Keep one hand clearly inside the frame for the most stable prediction. The detected label updates in real time from the Flask backend.
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script>
+        const predictionText = document.getElementById("predictionText");
+        const confidenceText = document.getElementById("confidenceText");
+        const cameraStatus = document.getElementById("cameraStatus");
+        const videoStream = document.getElementById("videoStream");
+        const videoPlaceholder = document.getElementById("videoPlaceholder");
+        const startButton = document.getElementById("startButton");
+        const stopButton = document.getElementById("stopButton");
+        let predictionTimer = null;
+
+        async function updatePrediction() {
+            try {
+                const response = await fetch("{{ url_for('prediction') }}", { cache: "no-store" });
+                const data = await response.json();
+
+                predictionText.textContent = data.prediction || "Waiting for hand...";
+                confidenceText.textContent = `Confidence: ${((data.confidence || 0) * 100).toFixed(2)}%`;
+                cameraStatus.textContent = data.camera_active ? "Live" : "Idle";
+            } catch (error) {
+                predictionText.textContent = "Connection lost";
+                confidenceText.textContent = "Confidence: 0.00%";
+                cameraStatus.textContent = "Disconnected";
+            }
+        }
+
+        function startDetection() {
+            videoStream.src = `{{ url_for('video_feed') }}?t=${Date.now()}`;
+            videoStream.classList.remove("hidden");
+            videoPlaceholder.classList.add("hidden");
+            cameraStatus.textContent = "Starting...";
+
+            if (predictionTimer) {
+                clearInterval(predictionTimer);
+            }
+
+            updatePrediction();
+            predictionTimer = setInterval(updatePrediction, 250);
+        }
+
+        function stopDetection() {
+            if (predictionTimer) {
+                clearInterval(predictionTimer);
+                predictionTimer = null;
+            }
+
+            videoStream.src = "";
+            videoStream.classList.add("hidden");
+            videoPlaceholder.classList.remove("hidden");
+            predictionText.textContent = "Waiting for hand...";
+            confidenceText.textContent = "Confidence: 0.00%";
+            cameraStatus.textContent = "Stopped";
+        }
+
+        startButton.addEventListener("click", startDetection);
+        stopButton.addEventListener("click", stopDetection);
+        window.addEventListener("beforeunload", stopDetection);
+    </script>
+</body>
+</html>

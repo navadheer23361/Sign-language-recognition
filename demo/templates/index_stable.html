@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skeleton Aware Sign Language Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top, rgba(14, 165, 233, 0.18), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.18), transparent 30%),
+                linear-gradient(135deg, #0f172a 0%, #111827 45%, #1e293b 100%);
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.45);
+        }
+
+        .video-frame {
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100">
+    <div class="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+        <header class="mb-8">
+            <div class="glass rounded-3xl px-6 py-5">
+                <p class="text-sm uppercase tracking-[0.3em] text-cyan-300">Skeleton Aware Vision</p>
+                <h1 class="mt-2 text-3xl font-bold sm:text-4xl">Skeleton Aware Sign Language Detection</h1>
+            </div>
+        </header>
+
+        <main class="grid flex-1 gap-6 lg:grid-cols-[1.5fr,0.9fr]">
+            <section class="glass overflow-hidden rounded-3xl p-4 sm:p-5">
+                <div class="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/50">
+                    <img
+                        src="{{ url_for('video_feed') }}"
+                        alt="Live stable sign language detection video stream"
+                        class="video-frame h-full w-full"
+                    >
+                </div>
+            </section>
+
+            <aside class="glass rounded-3xl p-6 sm:p-8">
+                <p class="text-sm uppercase tracking-[0.3em] text-emerald-300">Stable Prediction</p>
+                <div class="mt-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-6">
+                    <h2 id="predictionText" class="text-4xl font-black tracking-tight text-white sm:text-5xl">
+                        Waiting for hand...
+                    </h2>
+                    <p id="confidenceText" class="mt-4 text-base text-emerald-100/90">
+                        Confidence: 0.00%
+                    </p>
+                    <p id="modeText" class="mt-2 text-sm uppercase tracking-[0.2em] text-emerald-200/80">
+                        Mode: Verifying
+                    </p>
+                </div>
+
+                <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                        <p class="text-sm text-slate-400">Stream Status</p>
+                        <p id="cameraStatus" class="mt-2 text-lg font-semibold text-cyan-300">Starting...</p>
+                    </div>
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                        <p class="text-sm text-slate-400">Raw Model Output</p>
+                        <p id="rawText" class="mt-2 text-lg font-semibold text-slate-100">None</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-300">
+                    Prediction smoothing is enabled in this version. The dashboard only promotes a label after repeated confident detections across recent frames.
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script>
+        const predictionText = document.getElementById("predictionText");
+        const confidenceText = document.getElementById("confidenceText");
+        const modeText = document.getElementById("modeText");
+        const cameraStatus = document.getElementById("cameraStatus");
+        const rawText = document.getElementById("rawText");
+
+        async function updatePrediction() {
+            try {
+                const response = await fetch("{{ url_for('prediction') }}", { cache: "no-store" });
+                const data = await response.json();
+
+                predictionText.textContent = data.prediction || "Waiting for hand...";
+                confidenceText.textContent = `Confidence: ${((data.confidence || 0) * 100).toFixed(2)}%`;
+                modeText.textContent = `Mode: ${data.is_stable ? "Stable" : "Verifying"}`;
+                rawText.textContent = data.raw_prediction
+                    ? `${data.raw_prediction} (${((data.raw_confidence || 0) * 100).toFixed(2)}%)`
+                    : "None";
+                cameraStatus.textContent = data.camera_active ? "Live" : "Idle";
+            } catch (error) {
+                predictionText.textContent = "Connection lost";
+                confidenceText.textContent = "Confidence: 0.00%";
+                modeText.textContent = "Mode: Disconnected";
+                rawText.textContent = "None";
+                cameraStatus.textContent = "Disconnected";
+            }
+        }
+
+        updatePrediction();
+        setInterval(updatePrediction, 250);
+    </script>
+</body>
+</html>
