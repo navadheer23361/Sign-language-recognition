@@ -288,11 +288,11 @@ The ensemble model achieves the best overall recognition performance by combinin
 
 ---
 
-# 📈 Training & Evaluation Visualizations
+# 📈 Evaluation Visualizations
 
 ## Accuracy Curve
 
-![Accuracy Plot](demo results/accuracy.png)
+![Accuracy Plot](demo_results/accuracy.png)
 
 The teacher model converges faster and achieves higher accuracy compared to the distilled student model.
 
@@ -300,7 +300,7 @@ The teacher model converges faster and achieves higher accuracy compared to the 
 
 ## Confusion Matrix
 
-![Confusion Matrix](demo results/confusion.png)
+![Confusion Matrix](demo_results/confusion.png)
 
 The confusion matrix demonstrates class-wise prediction performance and highlights commonly confused gestures.
 
@@ -308,7 +308,7 @@ The confusion matrix demonstrates class-wise prediction performance and highligh
 
 ## Knowledge Distillation Loss
 
-![Distillation Loss](demo results/loss.png)
+![Distillation Loss](demo_results/loss.png)
 
 The student model effectively learns soft representations from the teacher network through distillation.
 
@@ -316,7 +316,7 @@ The student model effectively learns soft representations from the teacher netwo
 
 ## Per-Class Accuracy
 
-![Per-Class Accuracy](demo results/per_class.png)
+![Per-Class Accuracy](demo_results/per_class.png)
 
 Per-class accuracy analysis shows the recognition capability of the model across different sign categories.
 
@@ -324,7 +324,7 @@ Per-class accuracy analysis shows the recognition capability of the model across
 # 📁 Project Structure
 
 ```text
-Sign-Language-Recognition/
+Skeleton-Aware-Sign-Language-Detection/
 │
 ├── assets/
 │   ├── preprocessing_pipeline.png
@@ -374,9 +374,9 @@ Sign-Language-Recognition/
 │   └── top25_analysis.json
 │
 ├── README.md
+├── requirements.txt
 ├── Report.pdf
 ├── final_Presentation.pdf
-└── LICENSE
 ```
 
 
@@ -410,9 +410,9 @@ data/sign/
 ## Clone Repository
 
 ```bash
-git clone https://github.com/navadheer23361/Skeleton-Aware-Sign-Language-Recognition.git
+git clone https://github.com/navadheer23361/Skeleton-Aware-Sign-Language-Detection.git
 
-cd Skeleton-Aware-Sign-Language-Recognition
+cd Skeleton-Aware-Sign-Language-Detection
 ```
 
 ---
@@ -451,21 +451,7 @@ pip install -r requirements.txt
 
 # 🏋️ Training
 
-## Generate Skeleton Data
-
-```bash
-python tools/sign_gendata.py
-```
-
----
-
-## Generate Motion Streams
-
-```bash
-python tools/gen_motion_data.py
-```
-
----
+After preprocessing
 
 ## Train Joint Stream
 
@@ -501,15 +487,7 @@ python main.py --config configs/train_bone_motion.yaml
 
 # 🔍 Inference
 
-## Real-Time Webcam Demo
-
-```bash
-python demo/webcam_demo.py
-```
-
----
-
-## Flask Web Deployment
+## Real-Time Webcam Demo and Flask Web Deployment
 
 ```bash
 python demo/app.py
@@ -528,7 +506,7 @@ http://127.0.0.1:5000
 Generate evaluation metrics and plots:
 
 ```bash
-python results/generate_results.py
+python ensemble.py
 ```
 
 Metrics include:
